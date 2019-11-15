@@ -26,7 +26,7 @@ def calcShannonEnt(dateSet):
     # end for
     shannonEnt = 0.0
     for key in labelCounts:
-        logger.debug("labelCounts key is %s",labelCounts[key])
+        logger.debug("type [%s], count is %s",key, labelCounts[key])
         prob = float(labelCounts[key]) / numEntries
         shannonEnt -= prob * log(prob, 2)
     #end for
