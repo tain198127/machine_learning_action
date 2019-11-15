@@ -18,6 +18,7 @@ def calcShannonEnt(dateSet):
     labelCounts = {}
     for featVec in dateSet:
         currentLabel = featVec[-1]
+        logger.debug("currentLabel is %s",currentLabel)
         if currentLabel not in labelCounts.keys():
             labelCounts[currentLabel] = 0
         # end if
@@ -25,6 +26,7 @@ def calcShannonEnt(dateSet):
     # end for
     shannonEnt = 0.0
     for key in labelCounts:
+        logger.debug("labelCounts key is %s",labelCounts[key])
         prob = float(labelCounts[key]) / numEntries
         shannonEnt -= prob * log(prob, 2)
     #end for
