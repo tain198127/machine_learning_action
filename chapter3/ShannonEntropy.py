@@ -4,20 +4,26 @@ from math import log
 
 logger = Log.init_log(__name__, False)
 
-'''
-表决
-'''
+
 def majorityCnt(classList):
+    '''
+    表决
+    :param:classList 分类
+    '''
     classCount = {}
     for vote in classList:
         if vote not in classCount.keys(): classCount[vote] = 0
         classCount[vote] += 1
     sortedClassCount = sorted(classCount.items(), key=operator.itemgetter(1), reverse=True)
     return sortedClassCount[0][0]
-'''
-创建决策树
-'''
+
+
 def createTree(dataset, test_labels):
+    '''
+    创建决策树
+    :param dataset:数据集合
+    :param test_labels:label
+    '''
     classList = [x[-1] for x in dataset]
     if classList.count(classList[0]) == len(classList):
         return classList[0]
@@ -47,10 +53,13 @@ def createTree(dataset, test_labels):
         myTree[best_labels][value] = createTree(split_data_set(dataset, best_feature, value), subLabels)
 
     return myTree
-'''
-创建数据
-'''
+
+
 def create_date():
+    '''
+    创建数据集
+    :return:
+    '''
     data_set = [
         [1, 1, 'yes'], [1, 1, 'yes'], [1, 0, 'no'], [0, 1, 'no'], [0, 1, 'no']
     ]
@@ -58,10 +67,14 @@ def create_date():
     return data_set, labels
 
 
-'''
-对数据进行切分
-'''
 def split_data_set(data_set, axis, value):
+    '''
+    计算香农熵
+    :param data_set: 数据集
+    :param axis:列坐标
+    :param value:值
+    :return:
+    '''
     ret_data_set = []
     for featVec in data_set:
         if featVec[axis] == value:
@@ -71,10 +84,12 @@ def split_data_set(data_set, axis, value):
     return ret_data_set
 
 
-'''
-计算香农熵
-'''
 def calcShannonEnt(dateSet):
+    '''
+    计算香农熵
+    :param dateSet:
+    :return:
+    '''
     num_entries = len(dateSet)
     logger.debug("num_entries=%s", num_entries)
     label_counts = {}
@@ -96,10 +111,12 @@ def calcShannonEnt(dateSet):
     return shannon_ent
 
 
-'''
-选择熵最低的
-'''
 def choose_best_feature_2_split(dataSet):
+    '''
+    选择最佳feature
+    :param dataSet:
+    :return:
+    '''
     # 计算有几列
     num_feature = len(dataSet[0]) - 1
     # 计算这一列的香农熵
@@ -128,12 +145,59 @@ def choose_best_feature_2_split(dataSet):
     return best_feature
 
 
-mydata, labels = create_date()
-print(mydata)
+def classify(inputTree, featLabels, testVec):
+    '''
+    分类测试
+    :param inputTree:
+    :param featLabels:
+    :param testVec:
+    :return:
+    '''
+    firstStr = list(inputTree.keys())[0]
+    secondDic = inputTree[firstStr]
+    featIndex = featLabels.index(firstStr)
+    for key in secondDic.keys():
+        if testVec[featIndex] == key:
+            if type(secondDic[key]).__name__ == 'dict':
+                classLabel = classify(secondDic[key], featLabels, testVec)
+            else:
+                classLabel = secondDic[key]
+    return classLabel
 
-# calcShannonEnt(mydata)
-# splitdata = split_data_set(mydata,0,1)
-# logger.debug("splitdata is :%s",splitdata)
-# best = choose_best_feature_2_split(mydata)
-tree = createTree(mydata, labels)
-print(tree)
+
+def storeTree(inputTree, fileName):
+    '''
+    :param inputTree:
+    :param fileName:
+    :return:
+    '''
+    import pickle
+    fw = open(fileName, 'w')
+    pickle.dump(inputTree, fw)
+    fw.close()
+
+
+def grabTree(fileName):
+    '''
+    读取tree文件
+    :param fileName:
+    :return:
+    '''
+    import pickle
+    fr = open(fileName)
+    return pickle.load(fr)
+
+if __name__ == "__main__":
+    mydata, labels = create_date()
+    print(mydata)
+
+    # calcShannonEnt(mydata)
+    # splitdata = split_data_set(mydata,0,1)
+    # logger.debug("splitdata is :%s",splitdata)
+    # best = choose_best_feature_2_split(mydata)
+    tree = createTree(mydata, labels)
+    print(tree)
+    label1 = classify(tree, labels, [1, 0])
+    print(label1)
+    label2 = classify(tree, labels, [1, 1])
+    print(label2)
