@@ -98,7 +98,7 @@ def createPlot(inTree):
 # createPlot()
 if __name__ == "__main__":
     myTree = retrieveTree(0)
-    myTree['no surfacing'][3]='maybe'
+    # myTree['no surfacing'][3]='maybe'
     leafs = getNumLeafs(myTree)
     depth = getTreeDepth(myTree)
     createPlot(myTree)

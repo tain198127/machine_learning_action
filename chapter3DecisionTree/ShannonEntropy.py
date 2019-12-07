@@ -1,7 +1,7 @@
 import Log
 import operator
 from math import log
-
+from  chapter3DecisionTree.treePlotter import *
 logger = Log.init_log(__name__, False)
 
 
@@ -154,7 +154,9 @@ def classify(inputTree, featLabels, testVec):
     :return:
     '''
     firstStr = list(inputTree.keys())[0]
+    #拿到这棵树的key
     secondDic = inputTree[firstStr]
+
     featIndex = featLabels.index(firstStr)
     for key in secondDic.keys():
         if testVec[featIndex] == key:
@@ -187,8 +189,18 @@ def grabTree(fileName):
     fr = open(fileName)
     return pickle.load(fr)
 
-if __name__ == "__main__":
+def decisionLens():
+
+    with open('lenses.txt') as fp:
+        lenses = [line.strip().split('\t') for line in fp.readlines()]
+        lensesLabels = ['age', 'prescript', 'astigmatic', 'tearRate']
+    lense_Tree = createTree(lenses, lensesLabels)
+    createPlot(lense_Tree)
+
+def test():
     mydata, labels = create_date()
+    # mydata, labels = grabTree("./lenses.txt")
+
     print(mydata)
 
     # calcShannonEnt(mydata)
@@ -201,3 +213,7 @@ if __name__ == "__main__":
     print(label1)
     label2 = classify(tree, labels, [1, 1])
     print(label2)
+
+
+if __name__ == "__main__":
+    decisionLens()
