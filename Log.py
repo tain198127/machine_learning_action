@@ -31,3 +31,7 @@ def init_log(file_name,ispersistent_file):
     # 日志
     logger.debug('this is a logger debug message')
     return logger
+
+
+
+print("ok")
