@@ -7,8 +7,8 @@ if __name__ == "__main__":
     def navieBayes():
         navieBayes = NaiveBayes()
         navieBayes.testing_NB()
-    navieBayes()
-    # fire.Fire()
+    # navieBayes()
+    fire.Fire()
 
 
 
