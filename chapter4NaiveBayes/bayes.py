@@ -34,14 +34,14 @@ class NaiveBayes:
         for document in dataset:
             vocab_set = vocab_set | set(document)
         ret_list = list(vocab_set)
-        # ret_list.sort()
+        ret_list.sort()
         return ret_list
 
     @staticmethod
     def word2vector(vocab_list, input_set):
         '''
-        文字转向量
-        :param vocab_list:所有文章形成的词的set
+        文字转向量，形成标准向量
+        :param vocab_list:所有文章形成的词的set，总矩阵
         :param input_set:每段文章
         :return: 文章中某个词是否在全文set中出现
         例如 vocab_list = ["张三","打了","王五","爱上"]；input_set=["张三","爱上","王五"]。那么返回值就是
@@ -59,7 +59,8 @@ class NaiveBayes:
     def train_nbo(train_matrix, train_category):
         '''
         训练朴素贝叶斯
-        :param train_matrix: 词语命中矩阵，例如
+        :param train_matrix: 词语命中矩阵
+        例如
         [
             [1,1,1,0,0,1,0],
             [1,1,0,0,1,1,0],
@@ -70,22 +71,24 @@ class NaiveBayes:
         '''
         num_train_docs = len(train_matrix)  # 命中矩阵行数
         num_words = len(train_matrix[0])  # 第一篇文章的文字个数
-        pabusive = sum(train_category) / float(num_train_docs)  # 具有辱骂性语句的个数/总文章数
-        p0Num = ones(num_words)
-        p1Num = ones(num_words)
+        pabusive = sum(train_category) / float(num_train_docs)  # 具有辱骂性语句的个数/总文章数，得到总体辱骂概率
+        p0Num = ones(num_words)#为避免0概率使得最终乘积为0，使用拉普拉斯平滑。全都设置为1
+        p1Num = ones(num_words)#为避免0概率使得最终乘积为0，使用拉普拉斯平滑。全都设置为1
+        # 为避免0概率使得最终乘积为0，使用拉普拉斯平滑（加入常数lamda，此处为1）
         p0Denom = 2.0
         p1Denom = 2.0
         for i in range(num_train_docs):  # 循环每一行命中矩阵
             if train_category[i] == 1:
-                p1Num += train_matrix[i]  # 数组加法 最终形成[1,0,2,0,1,3]找各种格式的数组
+                p1Num += train_matrix[i]  # 数组加法 最终形成[1,0,2,0,1,3]各种格式的数组
                 p1Denom += sum(train_matrix[i])  # 计算所有具有辱骂
             else:
                 p0Num += train_matrix[i]
                 p0Denom += sum(train_matrix[i])
         '''
          这里为什么要使用对数，因为如果p1Num是个很小的值，就会造成vect为0.
-         使用对数可以解决这个问题，自然对数的特性会让其导数和原值不变，即，变化率不变。但是数据更加容易处理
-         虽然最终的结果不一样，但是不影响
+         使用对数可以解决这个问题，自然对数的特性会让其导数不变，即，变化率不变。但是数据更加容易处理
+         虽然最终的结果不一样，但是不影响最终结果，也就是说，分子和分母都用导数了，变化率是不变的。最终比较大小
+         的时候没有变化
         '''
         p1Vect = log(p1Num / p1Denom)
         p0Vect = log(p0Num / p0Denom)
@@ -95,10 +98,10 @@ class NaiveBayes:
     def classify_NB(vec2_classify, p0_vec, p1_vec, p_class1):
         '''
         进行分类
-        :param vec2_classify: 文章命中矩阵
-        :param p0_vec: 命中概率
-        :param p1_vec: 未命中概率
-        :param p_class1:具有辱骂性语句的个数/总文章数
+        :param vec2_classify: 待测试的文章命中矩阵
+        :param p0_vec: 训练出来的辱骂概率
+        :param p1_vec: 训练出来的非辱骂概率
+        :param p_class1:具有辱骂性语句的个数/总文章数，总概率
         :return:
         '''
         p1 = sum(vec2_classify * p1_vec) + log(p_class1)

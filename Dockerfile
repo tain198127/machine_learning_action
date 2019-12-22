@@ -14,5 +14,6 @@ COPY ./ ./
 ENV PATH /usr/local/bin:$PATH
 ENV LANG C.UTF-8
 
-ENTRYPOINT ["python3", "/app/__main__.py"]
+#ENTRYPOINT ["python3", "/app/__main__.py"]
+ENTRYPOINT ["/bin/sh"]
 
