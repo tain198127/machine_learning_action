@@ -58,7 +58,7 @@ class NaiveBayes:
     @staticmethod
     def train_nbo(train_matrix, train_category):
         '''
-        训练朴素贝叶斯
+        训练朴素贝叶斯——核心中的核心
         :param train_matrix: 词语命中矩阵
         例如
         [
@@ -110,6 +110,20 @@ class NaiveBayes:
             return 1
         else:
             return 0
+
+    @staticmethod
+    def bagOfWord2VecMn(vocabList, inputSet):
+        '''
+        词袋
+        :param vocabList:
+        :param inputSet:
+        :return:
+        '''
+        retVec = [0]*len(vocabList)
+        for word in inputSet:
+            for word in vocabList:
+                retVec[vocabList[word]]+=1
+        return retVec
 
     @staticmethod
     def testing_NB():
