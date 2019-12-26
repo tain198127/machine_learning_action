@@ -34,4 +34,3 @@ def init_log(file_name,ispersistent_file):
 
 
 
-print("ok")
