@@ -31,6 +31,7 @@ class Sigmoid:
     def grad_ascent(data_mat_in, class_labels):
 
         """
+        这个是梯度上升算法
         首先把data_mat_in中的数据转换为numpy的矩阵
         class_label从行向量转换为列向量，
         设定步长和循环次数。
@@ -73,9 +74,31 @@ class Sigmoid:
         return weight
 
     @staticmethod
+    def sto_grad_ascent(data_mat_in, class_labels, num_inter = 150):
+        """
+        随机梯度上升算法
+        :param data_mat_in:
+        :param class_labels:
+        :param num_inter: 随机循环次数
+        :return:
+        """
+        m,n = shape(data_mat_in)
+        step = 0.01
+        weights = ones(n)
+        for i in range(num_inter):
+            dataIndex = range(m)
+            for j in range(m):
+                alpha = 4/(i+j+1.0)+step
+                randIndex = int(random.uniform(0,len(dataIndex)))
+                h = Sigmoid.sigmoid(sum(data_mat_in[randIndex] * weights))
+                error = class_labels[randIndex] - h
+                weights = weights + (error * alpha) * array(data_mat_in[randIndex])
+        return weights
+
+    @staticmethod
     def plotBestFit(wei, data_mat, label_mat):
         import matplotlib.pyplot as plt
-        weights = wei.getA()
+        weights = array(wei)
         logger.info("wei is :%s, weights is :%s",wei, weights)
         data_arr = array(data_mat)
         n = shape(data_arr)[0]
@@ -109,4 +132,8 @@ if __name__ == "__main__":
     logger.info("label is %s", label_mat)
     weight = Sigmoid.grad_ascent(data_mat, label_mat)
     logger.info(weight)
+    Sigmoid.plotBestFit(weight,data_mat,label_mat)
+
+    weight = Sigmoid.sto_grad_ascent(data_mat,label_mat)
+    logger.info("随机梯度上升权重是 %s",weight)
     Sigmoid.plotBestFit(weight,data_mat,label_mat)
