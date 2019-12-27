@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
 from math import exp
 from numpy import *
+import os
 import sys
-sys.path.append('..')
-import Log
-# from .. import Log
+base_path = os.path.dirname(os.path.abspath(__file__))+"/.."
+current_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(base_path)
+
+
+from tesstlog import Log
+
+
 
 logger = Log.init_log(__name__, False)
 
@@ -14,7 +20,7 @@ class Sigmoid:
     def load_data_set():
         data_mat = []
         label_mat = []
-        fr = open("./testSet.txt")
+        fr = open(current_path+"/testSet.txt")
         for line in fr.readlines():
             line_array = line.strip().split()
             data_mat.append([1.0, float(line_array[0]), float(line_array[1])])  # 读X值，Y值
@@ -140,3 +146,5 @@ if __name__ == "__main__":
     weight = Sigmoid.sto_grad_ascent(data_mat,label_mat)
     logger.info("随机梯度上升权重是 %s",weight)
     Sigmoid.plotBestFit(weight,data_mat,label_mat)
+
+    

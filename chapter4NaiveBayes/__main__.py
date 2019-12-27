@@ -1,3 +1,8 @@
+import os
+import sys
+base_path = os.path.dirname(os.path.abspath(__file__))+"/.."
+current_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(base_path)
 from chapter4NaiveBayes.bayes import *
 
 if __name__ == "__main__":

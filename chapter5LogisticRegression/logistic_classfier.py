@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
-from math import exp
 from numpy import *
-import Log
+import os
+import sys
+base_path = os.path.dirname(os.path.abspath(__file__))+"/.."
+current_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(base_path)
+
+from tesstlog import Log
 logger = Log.init_log(__name__, False)
 from chapter5LogisticRegression.sigmoid import Sigmoid
 class LogisticClassfier:
@@ -30,11 +35,24 @@ class LogisticClassfier:
             return 1.0
         else:
             return 0.0
-    
+    @staticmethod
+    def loadSet():
+        fr_train = open(current_path+"/horseColicTraining.txt")
+        training_set = []
+        training_label = []
+        for line in fr_train.readlines():
+            current_line = line.strip().split("\t")
+            line_arr = []
+            for i in range(21):
+                line_arr.append(float(current_line[i]))
+            training_set.append(line_arr)
+            training_label.append(float(current_line[21]))
+        return training_set,training_label
+
     @staticmethod
     def colicTest():
-        fr_train = open("./horseColicTraining.txt")
-        fr_test = open("./horseColicTest.txt")
+        fr_train = open(current_path+"/horseColicTraining.txt")
+        fr_test = open(current_path+"/horseColicTest.txt")
         training_set = []
         training_label = []
         for line in fr_train.readlines():
@@ -69,3 +87,9 @@ class LogisticClassfier:
     
 if __name__ == "__main__":
     LogisticClassfier.multi_test()
+
+    set,label = LogisticClassfier.loadSet()
+
+    weight = Sigmoid.sto_grad_ascent(set,label)
+    logger.info("随机梯度上升权重是 %s",weight)
+    Sigmoid.plotBestFit(weight,set,label)

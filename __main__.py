@@ -1,4 +1,5 @@
-import Log
+from tesstlog import Log
+
 logger = Log.init_log(__name__, False)
 import fire
 from chapter4NaiveBayes.bayes import NaiveBayes

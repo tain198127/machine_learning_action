@@ -1,4 +1,10 @@
-import Log
+import os
+import sys
+base_path = os.path.dirname(os.path.abspath(__file__))+"/.."
+current_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(base_path)
+
+from tesstlog import Log
 from numpy import *
 
 logger = Log.init_log(__name__, False)

@@ -1,4 +1,9 @@
-import Log
+import os
+import sys
+base_path = os.path.dirname(os.path.abspath(__file__))+"/.."
+current_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(base_path)
+from tesstlog import Log
 import operator
 from math import log
 from  chapter3DecisionTree.treePlotter import *
@@ -191,7 +196,7 @@ def grabTree(fileName):
 
 def decisionLens():
 
-    with open('lenses.txt') as fp:
+    with open(current_path+'/lenses.txt') as fp:
         lenses = [line.strip().split('\t') for line in fp.readlines()]
         lensesLabels = ['age', 'prescript', 'astigmatic', 'tearRate']
     lense_Tree = createTree(lenses, lensesLabels)

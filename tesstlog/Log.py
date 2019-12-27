@@ -21,8 +21,8 @@ def init_log(file_name,ispersistent_file):
     # 第四步，将logger添加到handler里面
     logger.addHandler(ch)
     if ispersistent_file :
-        log_path = os.path.dirname(os.path.realpath(file_name)) + '/log/'
-        log_name = log_path + rq + '.log'
+        log_path = os.path.dirname(os.path.realpath(file_name)) + '/tesstlog/'
+        log_name = log_path + rq + '.tesstlog'
         logfile = log_name
         fh = logging.FileHandler(logfile)
         fh.setLevel(logging.ERROR)  # 输出到file的log等级的开关

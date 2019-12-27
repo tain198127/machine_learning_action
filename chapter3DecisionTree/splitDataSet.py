@@ -1,5 +1,4 @@
-import Log
-from math import log
+from tesstlog import Log
 
 logger = Log.init_log(__name__, False)
 def split_data_set(dataSet, axis, value):
