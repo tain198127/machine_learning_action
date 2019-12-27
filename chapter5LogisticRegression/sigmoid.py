@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 from math import exp
 from numpy import *
+import sys
+sys.path.append('..')
 import Log
+# from .. import Log
 
 logger = Log.init_log(__name__, False)
 
