@@ -74,7 +74,7 @@ class LogisticClassfier:
             if int(LogisticClassfier.classify_vector(array(line_arr),train_wegight)) != int(current_line[21]):
                 errorCount +=1
         error_rate = (float(errorCount)/numTestVec)
-        logger.info("错误率为: %d", error_rate)
+        logger.debug("错误率为: %d", error_rate)
         return error_rate
     
     @staticmethod
@@ -91,5 +91,5 @@ if __name__ == "__main__":
     set,label = LogisticClassfier.loadSet()
 
     weight = Sigmoid.sto_grad_ascent(set,label)
-    logger.info("随机梯度上升权重是 %s",weight)
+    # logger.info("随机梯度上升权重是 %s",weight)
     Sigmoid.plotBestFit(weight,set,label)

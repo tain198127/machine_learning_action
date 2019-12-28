@@ -3,14 +3,12 @@ from math import exp
 from numpy import *
 import os
 import sys
-base_path = os.path.dirname(os.path.abspath(__file__))+"/.."
+
+base_path = os.path.dirname(os.path.abspath(__file__)) + "/.."
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(base_path)
 
-
 from tesstlog import Log
-
-
 
 logger = Log.init_log(__name__, False)
 
@@ -20,7 +18,7 @@ class Sigmoid:
     def load_data_set():
         data_mat = []
         label_mat = []
-        fr = open(current_path+"/testSet.txt")
+        fr = open(current_path + "/testSet.txt")
         for line in fr.readlines():
             line_array = line.strip().split()
             data_mat.append([1.0, float(line_array[0]), float(line_array[1])])  # 读X值，Y值
@@ -59,16 +57,16 @@ class Sigmoid:
         label_matrix = mat(class_labels).transpose()  # 转换为列向量
         """计算矩阵的行数和列数"""
         m, n = shape(data_matrix)
-        logger.info("data_matrix的shape 分别是 %d行和%d列", m, n)
+        logger.debug("data_matrix的shape 分别是 %d行和%d列", m, n)
         """每次的步长，也就是微分每次微多少"""
         alpha = 0.001
         """循环次数"""
         max_cycle = 500
         """ones是个n行的矩阵，每行的向量只有一个值，是1"""
         weight = ones((n, 1))
-        logger.info("weight是 %s", weight)
-        logger.info("data_matrix 转置矩阵是 :%s", data_matrix.transpose())
-        """一下是这个算法的核心"""
+        logger.debug("weight是 %s", weight)
+        logger.debug("data_matrix 转置矩阵是 :%s", data_matrix.transpose())
+        """以下是这个算法的核心"""
         for k in range(max_cycle):
             """是矩阵运算"""
             h = Sigmoid.sigmoid(data_matrix * weight)
@@ -76,6 +74,7 @@ class Sigmoid:
             error = (label_matrix - h)
             """
             计算权重，权重*步长*矩阵转置 * 误差
+            (y-f(x))*x'
             weight相当于每次计算 历史weight * 误差 *步长
             but why 为什么要转置？
             """
@@ -83,7 +82,7 @@ class Sigmoid:
         return weight
 
     @staticmethod
-    def sto_grad_ascent(data_mat_in, class_labels, num_inter = 150):
+    def sto_grad_ascent(data_mat_in, class_labels, num_inter=150):
         """
         随机梯度上升算法
         :param data_mat_in:
@@ -91,14 +90,15 @@ class Sigmoid:
         :param num_inter: 随机循环次数
         :return:
         """
-        m,n = shape(data_mat_in)
+        m, n = shape(data_mat_in)
         step = 0.01
         weights = ones(n)
+        logger.debug("sto_grad_ascent weights is %s", weights)
         for i in range(num_inter):
             dataIndex = range(m)
             for j in range(m):
-                alpha = 4/(i+j+1.0)+step
-                randIndex = int(random.uniform(0,len(dataIndex)))
+                alpha = 4 / (i + j + 1.0) + step
+                randIndex = int(random.uniform(0, len(dataIndex)))
                 h = Sigmoid.sigmoid(sum(data_mat_in[randIndex] * weights))
                 error = class_labels[randIndex] - h
                 weights = weights + (error * alpha) * array(data_mat_in[randIndex])
@@ -108,7 +108,7 @@ class Sigmoid:
     def plotBestFit(wei, data_mat, label_mat):
         import matplotlib.pyplot as plt
         weights = array(wei)
-        logger.info("wei is :%s, weights is :%s",wei, weights)
+        logger.debug("wei is :%s, weights is :%s", wei, weights)
         data_arr = array(data_mat)
         n = shape(data_arr)[0]
         xcord1 = []
@@ -137,14 +137,12 @@ class Sigmoid:
 
 if __name__ == "__main__":
     data_mat, label_mat = Sigmoid.load_data_set()
-    logger.info("data: is %s", data_mat)
-    logger.info("label is %s", label_mat)
-    weight = Sigmoid.grad_ascent(data_mat, label_mat)
-    logger.info(weight)
-    Sigmoid.plotBestFit(weight,data_mat,label_mat)
+    # logger.info("data: is %s", data_mat)
+    # logger.info("label is %s", label_mat)
+    # weight = Sigmoid.grad_ascent(data_mat, label_mat)
+    # logger.info(weight)
+    # Sigmoid.plotBestFit(weight,data_mat,label_mat)
 
-    weight = Sigmoid.sto_grad_ascent(data_mat,label_mat)
-    logger.info("随机梯度上升权重是 %s",weight)
-    Sigmoid.plotBestFit(weight,data_mat,label_mat)
-
-    
+    weight = Sigmoid.sto_grad_ascent(data_mat, label_mat)
+    logger.info("随机梯度上升权重是 %s", weight)
+    Sigmoid.plotBestFit(weight, data_mat, label_mat)

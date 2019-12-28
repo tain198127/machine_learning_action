@@ -6,7 +6,7 @@ import os.path
 def init_log(file_name,ispersistent_file):
     logging.basicConfig()
     logger = logging.getLogger(file_name)
-    logger.setLevel(logging.DEBUG)  # Log等级总开关
+    logger.setLevel(logging.INFO)  # Log等级总开关
     rq = time.strftime('%Y%m%d%H%M', time.localtime(time.time()))
 
 
