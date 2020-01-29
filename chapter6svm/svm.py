@@ -56,25 +56,27 @@ class smo:
         # 初始化b=0，获取矩阵行列
         b = 0;
         m, n = shape(dataMatrix)
-        # 新建一个m行1列的向量
+        # 新建一个m行1列的alpha向量。这个就是我们要求解的,拉格朗日算子，内容都设置为1
         alphas = mat(zeros((m, 1)))
         # 迭代次数为0
         iters = 0
+        #外循环
         while (iters < maxIter):
             # 改变的alpha对数
             alphaPairsChanged = 0
-            # 遍历样本集中样本
+            # 遍历样本集中样本，也就是内循环
             for i in range(m):
-                # 计算支持向量机算法的预测值
+                # 计算支持向量机算法的预测值，这就是svm的核心：w^tX+b
                 fXi = float(multiply(alphas, labelMat).T * \
                             (dataMatrix * dataMatrix[i, :].T)) + b
                 # 计算预测值与实际值的误差
                 Ei = fXi - float(labelMat[i])
                 # 如果不满足KKT条件，即labelMat[i]*fXi<1(labelMat[i]*fXi-1<-toler)
                 # and alpha<C 或者labelMat[i]*fXi>1(labelMat[i]*fXi-1>toler)and alpha>0
+                # 判断这个向量能否优化，如果能够优化
                 if (((labelMat[i] * Ei < -toler) and (alphas[i] < C)) or \
                         ((labelMat[i] * Ei > toler) and (alphas[i] > 0))):
-                    # 随机选择第二个变量alphaj
+                    # 随机选择第二个变量alpha，进行优化
                     j = smo.selectJrand(i, m)
                     # 计算第二个变量对应数据的预测值
 
@@ -86,6 +88,7 @@ class smo:
                     alphaIold = alphas[i].copy()
                     alphaJold = alphas[j].copy()
                     # 如果两个alpha对应样本的标签不相同
+                    # 为了保证找到的alpha是在0到C之间
                     if (labelMat[i] != labelMat[j]):
                         # 求出相应的上下边界
                         L = max(0, alphas[j] - alphas[i])
@@ -121,13 +124,13 @@ class smo:
                     # 如果0<alphai<C,那么b=b1
                     if (0 < alphas[i]) and (C > alphas[i]):
                         b = b1
-                    # 否则如果0<alphai<C,那么b=b1
+                    # 否则如果0<alphaj<C,那么b=b1
                     elif (0 < alphas[j]) and (C > alphas[j]):
                         b = b2
                     # 否则，alphai，alphaj=0或C
                     else:
                         b = (b1 + b2) / 2.0
-                    # 如果走到此步，表面改变了一对alpha值
+                    # 如果走到此步，表明改变了一对alpha值
                     alphaPairsChanged += 1
                     print("iters: %d i:%d,paird changed %d" % (iters, i, alphaPairsChanged))
             # 最后判断是否有改变的alpha对，没有就进行下一次迭代
