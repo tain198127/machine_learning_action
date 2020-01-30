@@ -24,6 +24,17 @@ def kernelTrans(X, A, kTup):
     return K
 
 
+def calcWs(alpahs, dataArr, classLabel):
+    X = mat(dataArr)
+    labelMat = mat(classLabel).transpose()
+    m, n = shape(X)
+    # m行n列
+    w = zeros((n, 1))
+    for i in range(m):
+        w += multiply(alpahs[i] * labelMat[i], X[i, :].T)
+    return w
+
+
 def innerL(i, oS):
     """
     内循环寻找alphaj
@@ -53,9 +64,9 @@ def innerL(i, oS):
         oS.alphas[i] += oS.labelMat[j] * oS.labelMat[i] * (alphaJold - oS.alphas[j])  # update i by the same amount as j
         updateEk(oS, i)  # added this for the Ecache                    #the update is in the oppostie direction
         b1 = oS.b - Ei - oS.labelMat[i] * (oS.alphas[i] - alphaIold) * oS.K[i, i] - oS.labelMat[j] * (
-                oS.alphas[j] - alphaJold) * oS.K[i, j]
+                    oS.alphas[j] - alphaJold) * oS.K[i, j]
         b2 = oS.b - Ej - oS.labelMat[i] * (oS.alphas[i] - alphaIold) * oS.K[i, j] - oS.labelMat[j] * (
-                oS.alphas[j] - alphaJold) * oS.K[j, j]
+                    oS.alphas[j] - alphaJold) * oS.K[j, j]
         if (0 < oS.alphas[i]) and (oS.C > oS.alphas[i]):
             oS.b = b1
         elif (0 < oS.alphas[j]) and (oS.C > oS.alphas[j]):
