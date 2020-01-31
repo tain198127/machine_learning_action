@@ -61,3 +61,6 @@ class adaboost:
             # end for
         # end for
         return bestTrump, minError, bestClassEst
+
+    def adaBoostTrainDS(self,dataArr, classLabels, numIt =40):
+        weakClassArr = {}
