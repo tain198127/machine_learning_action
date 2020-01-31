@@ -157,3 +157,6 @@ class easyRegress:
             #end for
         #end for
         return net
+
+class softmax_test:
+    pass

@@ -37,9 +37,7 @@ class adaboost:
         numSteps = 10.0
         bestTrump = {}
         bestClassEst = torch.zeros(m, 1)
-        minError = torch.empty((m,m),dtype=float)
-        minError += float('inf')
-        isfirstrun=True
+        minError = float('inf')
         for i in range(n):
             rangeMin = transMat[:, i].min()
             rangeMax = transMat[:, i].max()
@@ -50,10 +48,8 @@ class adaboost:
                     predictedVals = self.strump_classify(transMat, i, threshVal, inequal)
                     errArr = torch.ones(m, 1)
                     errArr[predictedVals.view(1,5)[0] == labelMatTranspose] = 0
-                    weightError = D.t() * errArr
-                    if isfirstrun:
-                        minError = weightError+1
-                        isfirstrun=False
+                    weightError = torch.mm(D.T,errArr)
+
                     if weightError < minError:
                         minError = weightError
                         bestClassEst = predictedVals.clone()
