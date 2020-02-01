@@ -25,8 +25,8 @@ if (__name__ == '__main__'):
     lt=liner_test()
     lt.test()
 
-    er = easyRegress()
-    er.train()
+    # er = easyRegress()
+    # er.train()
     # x = nd.arange(12)
     # y = tc.arange(12)
     # print('mxnet arange is :{}'.format(x))
