@@ -13,3 +13,5 @@ if (__name__ == '__main__'):
     D = torch.ones((5,1))/5
     bestTrump, minError, bestClassEst = boost.build_strump(dataMat,labels,D)
     print(bestTrump, minError, bestClassEst)
+    weakClass = boost.adaBoostTrainDS(dataMat,labels)
+    print(weakClass)

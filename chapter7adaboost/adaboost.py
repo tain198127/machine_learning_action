@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from tesstlog import Log
 import torch
-
+import math
 logger = Log.init_log(__name__, False)
 from matplotlib import pyplot as plt
 
@@ -11,6 +11,11 @@ class adaboost:
     def __init__(self):
         figsize = (3.5, 2.5)
         plt.rcParams['figure.figsize'] = figsize
+    def _wrap_to_tensor(self,obj,deepcopy=True):
+        if torch.is_tensor(obj):
+            return obj
+        else:
+            return torch.tensor(obj)
 
     def load_simp_data(self):
         dataMatrix = torch.tensor([[1.0, 2.1], [2.0, 1.1], [1.3, 1.0], [1.0, 1.0], [2.0, 1.0]], dtype=torch.float)
@@ -30,8 +35,8 @@ class adaboost:
         return retArray
 
     def build_strump(self, dataArray, classLabels, D):
-        transMat = dataArray.clone().detach()
-        labelMatTranspose = classLabels.clone().detach().t()
+        transMat = self._wrap_to_tensor(dataArray)
+        labelMatTranspose = self._wrap_to_tensor(classLabels).t()
         m, n = transMat.shape
         print(m, n)
         numSteps = 10.0
@@ -48,7 +53,7 @@ class adaboost:
                     predictedVals = self.strump_classify(transMat, i, threshVal, inequal)
                     errArr = torch.ones(m, 1)
                     errArr[predictedVals.view(1,5)[0] == labelMatTranspose] = 0
-                    weightError = torch.mm(D.T,errArr)
+                    weightError = torch.mm(D.t().view(5,1),errArr)
 
                     if weightError < minError:
                         minError = weightError
@@ -63,4 +68,23 @@ class adaboost:
         return bestTrump, minError, bestClassEst
 
     def adaBoostTrainDS(self,dataArr, classLabels, numIt =40):
-        weakClassArr = {}
+        dataMat = self._wrap_to_tensor(dataArr)
+        labels = self._wrap_to_tensor(classLabels)
+        m = dataMat.shape[0]
+        D = torch.ones((m,1))/m
+        aggClassEst = torch.zeros((m,1))
+        weakClassArr = []
+        for i in range(numIt):
+            bestStrump, error, classEst = self.build_strump(dataMat,labels, D)
+            alpha = float(0.5*math.log((1-error)/max(error, 1e-16)))
+            bestStrump['alpha']=alpha
+            weakClassArr.append(bestStrump)
+            expon = (-1*labels.t()).matmul(classEst)
+            D = D.matmul(expon)
+            D = D/D.sum()
+            aggClassEst+=alpha*classEst
+            aggError = torch.mul(aggClassEst.sign()!= labels.t(),torch.ones((m,1)))
+            errorRate = aggError.sum()/m
+            if errorRate == 0.0:break;
+        return weakClassArr
+
