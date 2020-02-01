@@ -63,9 +63,9 @@ def cololrfull(content):
 def color_warn(content):
     return UseStyle(content, back='white', fore='red', mode='bold')
 
-def printc(*values, sep=' ', end='\n', file=None):
-    print(cololrfull(values), sep, end, file)
+def printc(values, sep=' ', end='\n', file=None):
+    print(cololrfull(values))
 
 
-def printw(*values, sep=' ', end='\n', file=None):
-    print(color_warn(values), sep, end, file)
+def printw(values, sep=' ', end='\n', file=None):
+    print(color_warn(values))

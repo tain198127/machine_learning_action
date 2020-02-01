@@ -11,22 +11,57 @@ import torch as tc
 import colorful.colorful as cf
 from pytorchlearn.chapter2 import *
 from pytorchlearn.chapter3 import *
+
 logger = Log.init_log(__name__, False)
 base_path = os.path.dirname(os.path.abspath(__file__)) + "/.."
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(base_path)
-if (__name__ == '__main__'):
 
+
+def basictest():
     bt = basic_torch()
     bt.index_test()
     bt.clone_test()
     bt.idtest()
 
-    lt=liner_test()
+
+def liner_test():
+    lt = liner_test()
     lt.test()
 
-    # er = easyRegress()
-    # er.train()
+
+def easy_regress():
+    er = easyRegress()
+    net = er.train()
+    cf.printw('easy regress net is{}'.format(net))
+
+
+def softmax_test():
+    st = softmax_test()
+
+
+testmethod = {
+    '0': ['基础函数', basictest],
+    '1': ['线性回归', liner_test],
+    '2': ['自动版线性回归', easy_regress],
+    '3': ['softmax', softmax_test]
+}
+if (__name__ == '__main__'):
+    command = '退出请输入-1\n'
+    for key in testmethod.keys():
+        command += key + '是:' + testmethod.get(key)[0] + '\n'
+    command += ':'
+    cmd = '65535'
+    while int(cmd) > 0:
+        cmd = input(command)
+        if int(cmd) <0:
+            break
+        if cmd in testmethod.values():
+            method = testmethod.get(cmd)
+            method[1]()
+        else:
+            cf.printc('输入的命令不在可选范围内')
+
     # x = nd.arange(12)
     # y = tc.arange(12)
     # print('mxnet arange is :{}'.format(x))
@@ -104,4 +139,3 @@ if (__name__ == '__main__'):
     # print(
     #     '所以必要时我们要把张量通过将所有张量的元素加权求和的方式转换为标量，举个例子，假设y由自变量x计算而来，w是和y同形的张量，则y.backward(w)的含义是：先计算l = torch.sum(y * w)，则l是个标量，然后求l对自变量x的导数')
     # print('反正啦，pytorch不支持直接对张量进行求导，需要以1=sum(x,y)的方式，苟且一下')
-

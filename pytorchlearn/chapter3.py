@@ -4,6 +4,10 @@ from tesstlog import Log
 logger = Log.init_log(__name__, False)
 import torch as tc
 import numpy as np
+import torchvision
+import torchvision.transforms as transforms
+import time
+import sys
 from matplotlib import pyplot as plt
 import colorful.colorful as cf
 import random
@@ -66,7 +70,7 @@ class liner_test:
         损失函数，表示的是 sigma{i=1,n}((hat)yi-yi)^2 这个数学公式。也就是运筹里面的求的那个最值
         y_hat是预测值，y是实际值，**2表示幂。即，将两者之间的差值做幂运算
         """
-        return (y_hat - y.view(y_hat.size())) ** 2 / 2
+        return (y_hat - y.view(y_hat.size())) ** 2/2
 
     def sgd(self, params, lr, batch_size):  # 本函数已保存在d2lzh_pytorch包中方便以后使用
         """
@@ -92,14 +96,14 @@ class liner_test:
             #总误差
             total_loss = 0
             for X, y in self.data_iter(self.batch_size, features, labels):
-                #第一步，使用预测模型计算y_hat
+                #第一步，使用预测模型计算y_hat。定义一个模型
                 y_hat = self.linreg(X, w, b)
-                #第二步，计算y_hat和y（预测和真实值之间）之间的误差
+                #第二步，计算y_hat和y（预测和真实值之间）之间的误差，计算loss
                 l = self.squared_loss(y_hat, y).sum()  # l是有关小批量X和y的损失
 
                 #第三步，梯度求导
                 l.backward()  # 小批量的损失对模型参数求梯度
-                #优化 w和b值
+                #优化 w和b值，不断的优化
                 self.sgd([w, b], lr, self.batch_size)  # 使用小批量随机梯度下降迭代模型参数
                 total_loss+=l.sum()
                 # 不要忘了梯度清零
@@ -180,7 +184,14 @@ class easyRegress:
             print('epoch %d, loss: %f' % (epoch, l.item()))
             #end for
         #end for
-        return net
+        return output
 
 class softmax_test:
-    pass
+    """
+    用来计算多类的概率，是多个output，一般MNIST模型。
+    """
+    def __init__(self):
+        mnist_train = torchvision.datasets.FashionMNIST(root='~/Datasets/FashionMNIST', train=True, download=True,
+                                                        transform=transforms.ToTensor())
+        mnist_test = torchvision.datasets.FashionMNIST(root='~/Datasets/FashionMNIST', train=False, download=True,
+                                                       transform=transforms.ToTensor())
