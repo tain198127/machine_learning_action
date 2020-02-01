@@ -196,7 +196,6 @@ class softmax_test:
     num_inputs = 784
     num_outputs = 10
 
-
     # X = tc.tensor([[1, 2, 3], [4, 5, 6]])
     num_epochs, lr = 5, 0.1
     mnist_train = torchvision.datasets.FashionMNIST(root='~/Datasets/FashionMNIST', train=True, download=True,
@@ -206,8 +205,6 @@ class softmax_test:
     """
     用来计算多类的概率，是多个output，一般MNIST模型。
     """
-
-
 
     def showPlt(self):
         X, y = self.info()
@@ -230,7 +227,8 @@ class softmax_test:
         b = tc.zeros(self.num_outputs, dtype=tc.float)
         W.requires_grad_(requires_grad=True)
         b.requires_grad_(requires_grad=True)
-        return W,b
+        return W, b
+
     def loadData(self):
         """加载算子"""
         if sys.platform.startswith('win'):
@@ -248,8 +246,8 @@ class softmax_test:
         partition = X_exp.sum(dim=1, keepdim=True)
         return X_exp / partition
 
-    def net(self, X,W,b):
-        return self.softmax(tc.mm(X.view((-1, self.num_inputs)),W) +b)
+    def net(self, X, W, b):
+        return self.softmax(tc.mm(X.view((-1, self.num_inputs)), W) + b)
 
     def loss(self, y_hat, y):
         y_hat.gather(1, y.view(-1, 1))
@@ -258,21 +256,21 @@ class softmax_test:
     def accuracy(self, y_hat, y):
         return (y_hat.argmax(dim=1) == y).float().mean().item()
 
-    def evaluate_accuracy(self, data_iter, W,b):
+    def evaluate_accuracy(self, data_iter, W, b):
         acc_sum, n = 0.0, 0
         for X, y in data_iter:
-            acc_sum += (self.net(X,W,b).argmax(dim=1) == y).float().sum().item()
+            acc_sum += (self.net(X, W, b).argmax(dim=1) == y).float().sum().item()
             n += y.shape[0]
         return acc_sum / n
 
     def train_softmax(self, net, train_iter, test_iter, loss, num_epochs, batch_size,
-              params=None, lr=None, optimizer=None):
+                      params=None, lr=None, optimizer=None):
         W = params[0]
         b = params[1]
         for epoch in range(num_epochs):
             train_l_sum, train_acc_sum, n = 0.0, 0.0, 0
             for X, y in train_iter:
-                y_hat = net(X,W,b)
+                y_hat = net(X, W, b)
                 l = loss(y_hat, y).sum()
 
                 # 梯度清零
@@ -291,16 +289,79 @@ class softmax_test:
                 train_l_sum += l.item()
                 train_acc_sum += (y_hat.argmax(dim=1) == y).sum().item()
                 n += y.shape[0]
-            test_acc = self.evaluate_accuracy(test_iter,W,b)
+            test_acc = self.evaluate_accuracy(test_iter, W, b)
             print('epoch %d, loss %.4f, train acc %.3f, test acc %.3f'
                   % (epoch + 1, train_l_sum / n, train_acc_sum / n, test_acc))
         return W, b
 
-    def test(self,test_iter,W,b):
+    def test(self, test_iter, W, b):
         X, y = iter(test_iter).next()
 
         true_labels = d2l.get_fashion_mnist_labels(y.numpy())
-        pred_labels = d2l.get_fashion_mnist_labels(self.net(X,W,b).argmax(dim=1).numpy())
+        pred_labels = d2l.get_fashion_mnist_labels(self.net(X, W, b).argmax(dim=1).numpy())
         titles = [true + '\n' + pred for true, pred in zip(true_labels, pred_labels)]
 
         d2l.show_fashion_mnist(X[0:9], titles[0:9])
+
+
+class LinearNet(nn.Module):
+    def __init__(self, num_inputs, num_outputs):
+        super(LinearNet, self).__init__()
+        self.linear = nn.Linear(num_inputs, num_outputs)
+
+    def forward(self, x):  # x shape: (batch, 1, 28, 28)
+        y = self.linear(x.view(x.shape[0], -1))
+        return y
+
+
+class FlattenLayer(nn.Module):
+    def __init__(self):
+        super(FlattenLayer, self).__init__()
+
+    def forward(self, x):  # x shape: (batch, *, *, ...)
+        return x.view(x.shape[0], -1)
+
+import collections
+class easy_softmax_test:
+    batch_size = 256
+    train_iter, test_iter = None, None
+    num_inputs = 784
+    num_outputs = 10
+    num_epochs = 5
+    net = None
+
+    def __init__(self):
+        self.train_iter, self.test_iter = self._loadData()
+        self.model = nn.Linear(self.num_inputs, self.num_outputs)
+        self.net = nn.Sequential(
+            collections.OrderedDict(
+                [('flatten', FlattenLayer()),
+                 ('linear', self.model)]
+            ))
+        init.normal_(self.net.linear.weight, mean=0, std=0.01)
+        init.constant_(self.net.linear.bias, val=0)
+        self.loss = nn.CrossEntropyLoss()
+        self.optimizer = tc.optim.SGD(self.net.parameters(), lr=0.1)
+
+
+    def _loadData(self):
+        """加载算子"""
+        if sys.platform.startswith('win'):
+            num_workers = 0  # 0表示不用额外的进程来加速读取数据
+        else:
+            num_workers = 4
+        mnist_train = torchvision.datasets.FashionMNIST(root='~/Datasets/FashionMNIST', train=True, download=True,
+                                                            transform=transforms.ToTensor())
+        mnist_test = torchvision.datasets.FashionMNIST(root='~/Datasets/FashionMNIST', train=False, download=True,
+                                                           transform=transforms.ToTensor())
+        train_iter = tc.utils.data.DataLoader(mnist_train, batch_size=self.batch_size, shuffle=True,
+                                              num_workers=num_workers)
+        test_iter = tc.utils.data.DataLoader(mnist_test, batch_size=self.batch_size, shuffle=False,
+                                             num_workers=num_workers)
+        return train_iter, test_iter
+
+    def train(self):
+         d2l.train_ch3(self.net, self.train_iter, self.test_iter, self.loss, self.num_epochs,
+                                          self.batch_size, None, None, self.optimizer)
+
+         return self.model

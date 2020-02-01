@@ -44,11 +44,19 @@ def softmaxtest():
     W,b = st.train_softmax(st.net,trainer,tester,st.loss,st.num_epochs,st.batch_size,[real_W,real_b],st.lr)
     st.test(tester,W,b)
 
+def easySoftMaxTest():
+    est = easy_softmax_test()
+    st = softmax_test()
+    models = est.train()
+
+    st.test(est.test_iter,models.weight,models.bias)
+
 testmethod = {
     '0': ['基础函数', basictest],
     '1': ['线性回归', linertest],
     '2': ['自动版线性回归', easyregress],
-    '3': ['softmax', softmaxtest]
+    '3': ['图片识别', softmaxtest],
+    '4': ['自动图片识别', easySoftMaxTest]
 }
 if (__name__ == '__main__'):
     command = '============================\n退出请输入-1\n'
