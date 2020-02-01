@@ -25,38 +25,39 @@ def basictest():
     bt.idtest()
 
 
-def liner_test():
+def linertest():
     lt = liner_test()
     lt.test()
 
 
-def easy_regress():
+def easyregress():
     er = easyRegress()
     net = er.train()
     cf.printw('easy regress net is{}'.format(net))
 
 
-def softmax_test():
+def softmaxtest():
     st = softmax_test()
+    st.info()
 
 
 testmethod = {
     '0': ['基础函数', basictest],
-    '1': ['线性回归', liner_test],
-    '2': ['自动版线性回归', easy_regress],
-    '3': ['softmax', softmax_test]
+    '1': ['线性回归', linertest],
+    '2': ['自动版线性回归', easyregress],
+    '3': ['softmax', softmaxtest]
 }
 if (__name__ == '__main__'):
-    command = '退出请输入-1\n'
+    command = '============================\n退出请输入-1\n'
     for key in testmethod.keys():
         command += key + '是:' + testmethod.get(key)[0] + '\n'
     command += ':'
     cmd = '65535'
-    while int(cmd) > 0:
-        cmd = input(command)
+    while True:
+        cmd = input(command).strip()
         if int(cmd) <0:
             break
-        if cmd in testmethod.values():
+        if cmd in testmethod.keys():
             method = testmethod.get(cmd)
             method[1]()
         else:

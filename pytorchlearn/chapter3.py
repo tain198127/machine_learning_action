@@ -15,7 +15,8 @@ import torch.utils.data as Data
 import torch.nn as nn
 from torch.nn import init
 import torch.optim as optim
-
+sys.path.append("..")
+import d2lzh as d2l
 
 class liner_test:
     batch_size = 10
@@ -187,6 +188,8 @@ class easyRegress:
         return output
 
 class softmax_test:
+    mnist_train=None
+    mnist_test=None
     """
     用来计算多类的概率，是多个output，一般MNIST模型。
     """
@@ -195,3 +198,15 @@ class softmax_test:
                                                         transform=transforms.ToTensor())
         mnist_test = torchvision.datasets.FashionMNIST(root='~/Datasets/FashionMNIST', train=False, download=True,
                                                        transform=transforms.ToTensor())
+        self.mnist_train = mnist_train
+        self.mnist_test = mnist_test
+    def info(self):
+        print(type(self.mnist_train))
+        print(len(self.mnist_train),len(self.mnist_test))
+        feature, labels = self.mnist_train[0]
+        print('shape is {}, labels is {}'.format(feature.shape, labels))
+        X, y = [], []
+        for i in range(10):
+            X.append(self.mnist_train[i][0])
+            y.append(self.mnist_train[i][1])
+        d2l.show_fashion_mnist(X, d2l.get_fashion_mnist_labels(y))
