@@ -38,8 +38,11 @@ def easyregress():
 
 def softmaxtest():
     st = softmax_test()
-    st.info()
 
+    trainer,tester = st.loadData()
+    real_W,real_b = st.initModel()
+    W,b = st.train_softmax(st.net,trainer,tester,st.loss,st.num_epochs,st.batch_size,[real_W,real_b],st.lr)
+    st.test(tester,W,b)
 
 testmethod = {
     '0': ['基础函数', basictest],

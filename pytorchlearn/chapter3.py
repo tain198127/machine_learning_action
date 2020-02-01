@@ -15,8 +15,10 @@ import torch.utils.data as Data
 import torch.nn as nn
 from torch.nn import init
 import torch.optim as optim
+
 sys.path.append("..")
 import d2lzh as d2l
+
 
 class liner_test:
     batch_size = 10
@@ -30,10 +32,10 @@ class liner_test:
         num_examples = 1000
         true_w = [2, -3.4]
         true_b = 4.2
-        #feature也就是X
+        # feature也就是X
         features = tc.randn(num_examples, num_inputs,
                             dtype=tc.float32)
-        #表示 sigma(2*x[i][0]-3.4*x[i][1]+4.2)。labels也就是Y
+        # 表示 sigma(2*x[i][0]-3.4*x[i][1]+4.2)。labels也就是Y
         labels = true_w[0] * features[:, 0] + true_w[1] * features[:, 1] + true_b
         # 表示加上一定的噪音
         labels += tc.tensor(np.random.normal(0, 0.01, size=labels.size()),
@@ -55,7 +57,7 @@ class liner_test:
         lr = 0.003
         num_epochs = 55
         features, labels, w, b = self.generate_dataset()
-        cf.printw('real w is{}, real b is {}'.format(w,b))
+        cf.printw('real w is{}, real b is {}'.format(w, b))
         realw, realb = self.train(lr=lr, num_epochs=num_epochs, features=features, labels=labels, w=w, b=b)
         cf.printc('w is {}, b is {}; '.format(realw, realb))
 
@@ -71,7 +73,7 @@ class liner_test:
         损失函数，表示的是 sigma{i=1,n}((hat)yi-yi)^2 这个数学公式。也就是运筹里面的求的那个最值
         y_hat是预测值，y是实际值，**2表示幂。即，将两者之间的差值做幂运算
         """
-        return (y_hat - y.view(y_hat.size())) ** 2/2
+        return (y_hat - y.view(y_hat.size())) ** 2 / 2
 
     def sgd(self, params, lr, batch_size):  # 本函数已保存在d2lzh_pytorch包中方便以后使用
         """
@@ -94,25 +96,25 @@ class liner_test:
         for epoch in range(num_epochs):  # 训练模型一共需要num_epochs个迭代周期
             # 在每一个迭代周期中，会使用训练数据集中所有样本一次（假设样本数能够被批量大小整除）。X
             # 和y分别是小批量样本的特征和标签
-            #总误差
+            # 总误差
             total_loss = 0
             for X, y in self.data_iter(self.batch_size, features, labels):
-                #第一步，使用预测模型计算y_hat。定义一个模型
+                # 第一步，使用预测模型计算y_hat。定义一个模型
                 y_hat = self.linreg(X, w, b)
-                #第二步，计算y_hat和y（预测和真实值之间）之间的误差，计算loss
+                # 第二步，计算y_hat和y（预测和真实值之间）之间的误差，计算loss
                 l = self.squared_loss(y_hat, y).sum()  # l是有关小批量X和y的损失
 
-                #第三步，梯度求导
+                # 第三步，梯度求导
                 l.backward()  # 小批量的损失对模型参数求梯度
-                #优化 w和b值，不断的优化
+                # 优化 w和b值，不断的优化
                 self.sgd([w, b], lr, self.batch_size)  # 使用小批量随机梯度下降迭代模型参数
-                total_loss+=l.sum()
+                total_loss += l.sum()
                 # 不要忘了梯度清零
                 w.grad.data.zero_()
                 b.grad.data.zero_()
             train_l = self.squared_loss(self.linreg(features, w, b), labels)
             print('epoch %d, loss %f' % (epoch + 1, train_l.mean().item()))
-            cf.printc('Epoch 第 %d 次，总loss值是 %f'%(epoch+1, total_loss/len(features)))
+            cf.printc('Epoch 第 %d 次，总loss值是 %f' % (epoch + 1, total_loss / len(features)))
         return w, b
 
     def data_iter(self, batch_size, features, labels):
@@ -183,30 +185,122 @@ class easyRegress:
                 l.backward()
                 optimizer.step()
             print('epoch %d, loss: %f' % (epoch, l.item()))
-            #end for
-        #end for
+            # end for
+        # end for
         return output
 
+
 class softmax_test:
-    mnist_train=None
-    mnist_test=None
+    batch_size = 256
+    # train_iter, test_iter = d2l.load_data_fashion_mnist(batch_size)
+    num_inputs = 784
+    num_outputs = 10
+
+
+    # X = tc.tensor([[1, 2, 3], [4, 5, 6]])
+    num_epochs, lr = 5, 0.1
+    mnist_train = torchvision.datasets.FashionMNIST(root='~/Datasets/FashionMNIST', train=True, download=True,
+                                                    transform=transforms.ToTensor())
+    mnist_test = torchvision.datasets.FashionMNIST(root='~/Datasets/FashionMNIST', train=False, download=True,
+                                                   transform=transforms.ToTensor())
     """
     用来计算多类的概率，是多个output，一般MNIST模型。
     """
-    def __init__(self):
-        mnist_train = torchvision.datasets.FashionMNIST(root='~/Datasets/FashionMNIST', train=True, download=True,
-                                                        transform=transforms.ToTensor())
-        mnist_test = torchvision.datasets.FashionMNIST(root='~/Datasets/FashionMNIST', train=False, download=True,
-                                                       transform=transforms.ToTensor())
-        self.mnist_train = mnist_train
-        self.mnist_test = mnist_test
+
+
+
+    def showPlt(self):
+        X, y = self.info()
+        d2l.show_fashion_mnist(X, d2l.get_fashion_mnist_labels(y))
+
     def info(self):
         print(type(self.mnist_train))
-        print(len(self.mnist_train),len(self.mnist_test))
+        print(len(self.mnist_train), len(self.mnist_test))
         feature, labels = self.mnist_train[0]
         print('shape is {}, labels is {}'.format(feature.shape, labels))
         X, y = [], []
         for i in range(10):
             X.append(self.mnist_train[i][0])
             y.append(self.mnist_train[i][1])
-        d2l.show_fashion_mnist(X, d2l.get_fashion_mnist_labels(y))
+        return X, y
+
+    def initModel(self):
+        """生成权重"""
+        W = tc.tensor(np.random.normal(0, 0.01, (self.num_inputs, self.num_outputs)), dtype=tc.float)
+        b = tc.zeros(self.num_outputs, dtype=tc.float)
+        W.requires_grad_(requires_grad=True)
+        b.requires_grad_(requires_grad=True)
+        return W,b
+    def loadData(self):
+        """加载算子"""
+        if sys.platform.startswith('win'):
+            num_workers = 0  # 0表示不用额外的进程来加速读取数据
+        else:
+            num_workers = 4
+        train_iter = tc.utils.data.DataLoader(self.mnist_train, batch_size=self.batch_size, shuffle=True,
+                                              num_workers=num_workers)
+        test_iter = tc.utils.data.DataLoader(self.mnist_test, batch_size=self.batch_size, shuffle=False,
+                                             num_workers=num_workers)
+        return train_iter, test_iter
+
+    def softmax(self, X):
+        X_exp = X.exp()
+        partition = X_exp.sum(dim=1, keepdim=True)
+        return X_exp / partition
+
+    def net(self, X,W,b):
+        return self.softmax(tc.mm(X.view((-1, self.num_inputs)),W) +b)
+
+    def loss(self, y_hat, y):
+        y_hat.gather(1, y.view(-1, 1))
+        return - tc.log(y_hat.gather(1, y.view(-1, 1)))
+
+    def accuracy(self, y_hat, y):
+        return (y_hat.argmax(dim=1) == y).float().mean().item()
+
+    def evaluate_accuracy(self, data_iter, W,b):
+        acc_sum, n = 0.0, 0
+        for X, y in data_iter:
+            acc_sum += (self.net(X,W,b).argmax(dim=1) == y).float().sum().item()
+            n += y.shape[0]
+        return acc_sum / n
+
+    def train_softmax(self, net, train_iter, test_iter, loss, num_epochs, batch_size,
+              params=None, lr=None, optimizer=None):
+        W = params[0]
+        b = params[1]
+        for epoch in range(num_epochs):
+            train_l_sum, train_acc_sum, n = 0.0, 0.0, 0
+            for X, y in train_iter:
+                y_hat = net(X,W,b)
+                l = loss(y_hat, y).sum()
+
+                # 梯度清零
+                if optimizer is not None:
+                    optimizer.zero_grad()
+                elif params is not None and params[0].grad is not None:
+                    for param in params:
+                        param.grad.data.zero_()
+
+                l.backward()
+                if optimizer is None:
+                    d2l.sgd(params, lr, batch_size)
+                else:
+                    optimizer.step()  # “softmax回归的简洁实现”一节将用到
+
+                train_l_sum += l.item()
+                train_acc_sum += (y_hat.argmax(dim=1) == y).sum().item()
+                n += y.shape[0]
+            test_acc = self.evaluate_accuracy(test_iter,W,b)
+            print('epoch %d, loss %.4f, train acc %.3f, test acc %.3f'
+                  % (epoch + 1, train_l_sum / n, train_acc_sum / n, test_acc))
+        return W, b
+
+    def test(self,test_iter,W,b):
+        X, y = iter(test_iter).next()
+
+        true_labels = d2l.get_fashion_mnist_labels(y.numpy())
+        pred_labels = d2l.get_fashion_mnist_labels(self.net(X,W,b).argmax(dim=1).numpy())
+        titles = [true + '\n' + pred for true, pred in zip(true_labels, pred_labels)]
+
+        d2l.show_fashion_mnist(X[0:9], titles[0:9])
