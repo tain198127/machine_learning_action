@@ -11,6 +11,7 @@ import torch as tc
 import colorful.colorful as cf
 from pytorchlearn.chapter2 import *
 from pytorchlearn.chapter3 import *
+from pytorchlearn.chapter3MLP import *
 
 logger = Log.init_log(__name__, False)
 base_path = os.path.dirname(os.path.abspath(__file__)) + "/.."
@@ -51,12 +52,28 @@ def easySoftMaxTest():
 
     st.test(est.test_iter,models.weight,models.bias)
 
+def mlp_test():
+    mlp =  MLP()
+    mlp.testxplot(0)
+    mlp.testxplot(1)
+    mlp.testxplot(2)
+def mlp_train():
+    mlp = MLP()
+    mlp.train()
+def easy_mlp_train():
+    emlp = EasyMLP()
+    emlp.train()
+
+
 testmethod = {
     '0': ['基础函数', basictest],
     '1': ['线性回归', linertest],
     '2': ['自动版线性回归', easyregress],
     '3': ['图片识别', softmaxtest],
-    '4': ['自动图片识别', easySoftMaxTest]
+    '4': ['自动图片识别', easySoftMaxTest],
+    '5': ['激活函数', mlp_test],
+    '6': ['多层感知网', mlp_train],
+    '7': ['自动多层感知网', easy_mlp_train],
 }
 if (__name__ == '__main__'):
     command = '============================\n退出请输入-1\n'
