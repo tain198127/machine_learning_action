@@ -153,3 +153,84 @@ class EasyMLP:
             test_acc = self.evaluate_accuracy(self.test_iter, self.net)
             print('epoch %d, loss %.4f, train acc %.3f, test acc %.3f'
                   % (epoch + 1, train_l_sum / n, train_acc_sum / n, test_acc))
+
+
+class ErrorTest:
+    """
+    y=1.2x−3.4x^2+5.6x^3+5+ϵ,
+    误差分析
+    """
+    train_times = 100  # 训练次数
+    test_times = 100  # 测试次数
+    true_weight = [1.2, -3.4, 5.6]  # x的系数，也就是权重
+    true_bias = 5  # 常数
+    features = torch.randn(train_times + test_times, 1)  # 生成一个验证数据集和测试数据集，里面都是1,指的就是X
+    # 1.2x−3.4x^2+5.6x^3+5
+    poly_features = torch.cat((features, torch.pow(features, 2), torch.pow(features, 3)), 1)
+    features_power2 =torch.pow(features, 2)
+    features_power3 = torch.pow(features, 3)
+    model = true_weight[0] * features + true_weight[1] * features_power2 + true_weight[2] * features_power3 + true_bias
+    # ϵ 噪音
+    noise = torch.tensor(np.random.uniform(0, 0.01, size=model.size()), dtype=torch.float)
+    model += noise
+    num_epochs, loss = 100, torch.nn.MSELoss()
+
+    def semilogy(self, x_vals, y_vals, x_label, y_label, x2_vals=None, y2_vals=None,
+                 legend=None, figsize=(3.5, 2.5)):
+        d2l.set_figsize(figsize)
+        d2l.plt.xlabel(x_label)
+        d2l.plt.ylabel(y_label)
+        d2l.plt.semilogy(x_vals, y_vals)
+        if x2_vals and y2_vals:
+            d2l.plt.semilogy(x2_vals, y2_vals, linestyle=':')
+            d2l.plt.legend(legend)
+
+    def fit_and_plot(self, train_features, test_features, train_labels, test_labels):
+        net = torch.nn.Linear(train_features.shape[-1], 1)
+        # 通过Linear文档可知，pytorch已经将参数初始化了，所以我们这里就不手动初始化了
+
+        batch_size = min(10, train_labels.shape[0])
+        dataset = torch.utils.data.TensorDataset(train_features, train_labels)
+        train_iter = torch.utils.data.DataLoader(dataset, batch_size, shuffle=True)
+
+        optimizer = torch.optim.SGD(net.parameters(), lr=0.01)
+        train_ls, test_ls = [], []
+        for _ in range(self.num_epochs):
+            for X, y in train_iter:
+                l = self.loss(net(X), y.view(-1, 1))
+                optimizer.zero_grad()
+                l.backward()
+                optimizer.step()
+            train_labels = train_labels.view(-1, 1)
+            test_labels = test_labels.view(-1, 1)
+            train_ls.append(self.loss(net(train_features), train_labels).item())
+            test_ls.append(self.loss(net(test_features), test_labels).item())
+        print('final epoch: train loss', train_ls[-1], 'test loss', test_ls[-1])
+        self.semilogy(range(1, self.num_epochs + 1), train_ls, 'epochs', 'loss',
+                      range(1, self.num_epochs + 1), test_ls, ['train', 'test'])
+        print('weight:', net.weight.data,
+              '\nbias:', net.bias.data)
+
+    def test_train(self):
+        traininput = torch.cat((self.features[:self.train_times,:],self.features_power2[:self.train_times,:],self.features_power3[:self.train_times,:]),1)
+        testinput = torch.cat((self.features[self.train_times:,:], self.features_power2[self.train_times:,:], self.features_power3[self.train_times:,:]), 1)
+        self.fit_and_plot(traininput.clone(), testinput.clone(),
+            self.model[:self.train_times].clone(), self.model[self.train_times:].clone())
+        d2l.plt.show()
+
+    def UnderfitTrain(self):#欠拟合
+        """
+        欠拟合使用的是过于简单的模型权重
+        """
+        self.fit_and_plot(self.features[:self.train_times, :].clone(), self.features[self.train_times:, :].clone(), self.model[:self.train_times].clone(),
+                     self.model[self.train_times:].clone())
+        d2l.plt.show()
+
+    def overfitTrain(self):#过拟合
+        """
+        过拟合，训练样本太少
+        """
+        self.fit_and_plot(self.features[0:2, :].clone(), self.features[self.train_times:, :].clone(),
+                          self.model[0:2].clone(),
+                          self.model[self.train_times:].clone())
+        d2l.plt.show()

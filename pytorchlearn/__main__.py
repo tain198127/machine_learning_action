@@ -64,6 +64,11 @@ def easy_mlp_train():
     emlp = EasyMLP()
     emlp.train()
 
+def error_train_test():
+    et = ErrorTest()
+    et.test_train()
+    et.UnderfitTrain()
+    et.overfitTrain()
 
 testmethod = {
     '0': ['基础函数', basictest],
@@ -74,6 +79,7 @@ testmethod = {
     '5': ['激活函数', mlp_test],
     '6': ['多层感知网', mlp_train],
     '7': ['自动多层感知网', easy_mlp_train],
+    '8': ['误差测试', error_train_test],
 }
 if (__name__ == '__main__'):
     command = '============================\n退出请输入-1\n'
