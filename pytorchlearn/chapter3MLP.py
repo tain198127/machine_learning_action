@@ -35,6 +35,9 @@ class MLP:
 
     @staticmethod
     def relu(X):
+        '''
+        激活函数，自己定义的，现在用relu更常用
+        '''
         return torch.max(input=X, other=torch.tensor(0.0))
 
     def net(self, X):

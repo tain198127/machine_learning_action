@@ -223,8 +223,11 @@ class softmax_test:
 
     def initModel(self):
         """生成权重"""
+        #生成正态分布的权重
         W = tc.tensor(np.random.normal(0, 0.01, (self.num_inputs, self.num_outputs)), dtype=tc.float)
+        # 生成大小为num_outputs的矩阵，且初值为0
         b = tc.zeros(self.num_outputs, dtype=tc.float)
+        # 要求使用自动梯度
         W.requires_grad_(requires_grad=True)
         b.requires_grad_(requires_grad=True)
         return W, b
@@ -235,13 +238,19 @@ class softmax_test:
             num_workers = 0  # 0表示不用额外的进程来加速读取数据
         else:
             num_workers = 4
+        #训练集
         train_iter = tc.utils.data.DataLoader(self.mnist_train, batch_size=self.batch_size, shuffle=True,
                                               num_workers=num_workers)
+        #测试集
         test_iter = tc.utils.data.DataLoader(self.mnist_test, batch_size=self.batch_size, shuffle=False,
                                              num_workers=num_workers)
         return train_iter, test_iter
 
     def softmax(self, X):
+        """
+        核心算法  exp(X)/sum(exp(X)) 求其概率分布
+        sum(dim=1)表示对每一行数据求sum，例如[[1,2,3],[4,5,6]]的sum(dim=1)=[[6],[15]]
+        """
         X_exp = X.exp()
         partition = X_exp.sum(dim=1, keepdim=True)
         return X_exp / partition
@@ -250,6 +259,9 @@ class softmax_test:
         return self.softmax(tc.mm(X.view((-1, self.num_inputs)), W) + b)
 
     def loss(self, y_hat, y):
+        '''
+        损失函数的计算：交叉熵损失函数
+        '''
         y_hat.gather(1, y.view(-1, 1))
         return - tc.log(y_hat.gather(1, y.view(-1, 1)))
 
@@ -270,6 +282,9 @@ class softmax_test:
         for epoch in range(num_epochs):
             train_l_sum, train_acc_sum, n = 0.0, 0.0, 0
             for X, y in train_iter:
+                """
+                W是权重，b是偏移量， X是输入，y是输出
+                """
                 y_hat = net(X, W, b)
                 l = loss(y_hat, y).sum()
 
@@ -331,8 +346,11 @@ class easy_softmax_test:
     net = None
 
     def __init__(self):
+        #加载数据，分别是训练数据和测试数据
         self.train_iter, self.test_iter = self._loadData()
+        #线性模型
         self.model = nn.Linear(self.num_inputs, self.num_outputs)
+        #定义一个训练模型
         self.net = nn.Sequential(
             collections.OrderedDict(
                 [('flatten', FlattenLayer()),
@@ -340,7 +358,9 @@ class easy_softmax_test:
             ))
         init.normal_(self.net.linear.weight, mean=0, std=0.01)
         init.constant_(self.net.linear.bias, val=0)
+        #定义损失函数
         self.loss = nn.CrossEntropyLoss()
+        #定义优化函数
         self.optimizer = tc.optim.SGD(self.net.parameters(), lr=0.1)
 
 

@@ -69,7 +69,11 @@ def error_train_test():
     et.test_train()
     et.UnderfitTrain()
     et.overfitTrain()
+from pytorchlearn.testCV import *
+def nlptest():
 
+    cv = testcv()
+    cv.totxt()
 testmethod = {
     '0': ['基础函数', basictest],
     '1': ['线性回归', linertest],
@@ -80,6 +84,7 @@ testmethod = {
     '6': ['多层感知网', mlp_train],
     '7': ['自动多层感知网', easy_mlp_train],
     '8': ['误差测试', error_train_test],
+    '9': ['ocr', nlptest],
 }
 if (__name__ == '__main__'):
     command = '============================\n退出请输入-1\n'
