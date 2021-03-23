@@ -87,12 +87,12 @@ def session5():
     d = pd.DataFrame(data=np.array([[175, 150, 36],
                                     [172, 160, 38],
                                     [173, 170, 44]]),
-                                    index=[1, 2, 3],
-                            columns=['身高', '体重', '胸围'])
+                     index=[1, 2, 3],
+                     columns=['身高', '体重', '胸围'])
     print(d)
     print('========================================')
 
-    path = '~/Desktop/生物信息.csv'
+    path = './生物信息.csv'
     e = pd.DataFrame(pd.read_csv(path))
 
     print(e)
@@ -102,10 +102,132 @@ def session5():
     print('values:\n')
     print(e.values)
 
-    print(e.loc[0:,'身高'].values)
+    print(e.loc[0:, '身高'].values)
     # plt.plot(e)
-    plt.scatter(x= e.loc[0:,'身高'],y=e.loc[0:,'胸围'])
+    plt.scatter(x=e.loc[0:, '身高'], y=e.loc[0:, '胸围'])
     plt.show()
 
 
-session5()
+def _loadFile():
+    France = []
+    with open('./owid-covid-data.csv', mode='r', encoding='utf-8') as f:
+        data = f.readlines()
+        for line in data:
+            field = [item for item in line.split(',')]
+            if field[2] == 'France':
+                France.append(field[4])
+        # end for
+    # end with
+    return France
+
+
+def session6_liner():
+    from sklearn.linear_model import LinearRegression
+    # 多项式的包
+    # standardscaler是做归一化的
+    France = _loadFile()
+    France = np.array(France, dtype=np.float).astype(int)
+    X = np.arange(np.size(France))
+    # print(X)
+    X = X.reshape(-1, 1)
+    # print(X)
+    # 线性回归的工具包
+    mode = LinearRegression()
+    # 进行训练
+    mode.fit(X, France)
+    # 推断、预测
+    y = mode.predict(X)
+    print(France)
+    print(mode.coef_)
+    print(mode.intercept_)
+    # 显示真实值
+    plt.scatter(X, France)
+    # 显示拟合曲线
+    plt.plot(X, y, color='r')
+    plt.show()
+
+
+def session6_ploy():
+    '''
+    多项式回归
+    '''
+    print('多项式回归')
+
+    from sklearn.linear_model import LinearRegression
+    from sklearn.pipeline import Pipeline
+    # 多项式的包
+    from sklearn.preprocessing import PolynomialFeatures
+    # standardscaler是做归一化的
+    from sklearn.preprocessing import StandardScaler
+    France = _loadFile()
+    France = np.array(France, dtype=np.float).astype(int)
+    X = np.arange(np.size(France)).reshape(-1, 1)
+    poly = Pipeline(steps=[
+        ('特征工程', PolynomialFeatures(degree=20)),
+        ('归一化', StandardScaler()),
+        ('线性回归', LinearRegression())
+    ]
+    )
+    poly.fit(X, France)
+    y = poly.predict(X)
+    plt.scatter(X, France)
+    plt.plot(X, y, color='r')
+
+    loss1 = np.dot(y, France) / (np.sqrt(np.dot(y, y)) * np.sqrt(np.dot(France, France)))
+    print('余弦相似度:{}%'.format(loss1))
+    print('拟合度是否超过95%:{}'.format('是' if loss1 > 0.95 else '否'))
+    print('打分结果:{}%'.format(poly.score(X, France)))
+    plt.show()
+
+
+'''波士顿房价，多元回归模型'''
+
+
+def session_boston():
+    from sklearn.datasets import load_boston
+    from sklearn.model_selection import train_test_split
+    from sklearn.pipeline import Pipeline
+    from sklearn.preprocessing import PolynomialFeatures
+
+    from sklearn.linear_model import LinearRegression
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.preprocessing import StandardScaler
+    boston = load_boston()
+    # print(boston)
+    X = boston.get('data')
+    Y = boston.get('target')
+    title = boston.get('feature_names')
+
+    stdScaler_X = StandardScaler()
+    # 归一化
+    print(X)
+    X = stdScaler_X.fit_transform(X)
+    Y = stdScaler_X.fit_transform(Y.reshape(-1,1))
+    # print(X)
+    # print(Y)
+    # 形成测试集
+    train_X, test_X, train_Y, test_Y = train_test_split(X, Y, test_size=0.2)
+    # # 使用模型
+    model = LinearRegression()
+    # model = LogisticRegression()
+    # # 训练
+    model.fit(train_X, train_Y)
+    preTestY = model.predict(test_X)
+
+    print('线性回归得分:{}'.format(model.score(test_X, test_Y)))
+    poly = Pipeline(steps=[
+        ('特征工程', PolynomialFeatures(degree=3)),
+        ('归一化', StandardScaler()),
+        ('线性回归', LinearRegression())
+    ]
+    )
+    poly.fit(train_X,train_Y)
+    polyPreTestY = poly.predict(test_X)
+    print('多项式回归得分:{}'.format(poly.score(test_X,test_Y)))
+
+    plt.plot(train_X,train_Y)
+    plt.show()
+
+
+session_boston()
+# session6_ploy()
