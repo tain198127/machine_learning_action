@@ -120,17 +120,14 @@ def _loadFile():
     # end with
     return France
 
-
+'''法国疫情'''
 def session6_liner():
     from sklearn.linear_model import LinearRegression
-    # 多项式的包
-    # standardscaler是做归一化的
+    # 读取csv法国累计病例人数
     France = _loadFile()
     France = np.array(France, dtype=np.float).astype(int)
     X = np.arange(np.size(France))
-    # print(X)
     X = X.reshape(-1, 1)
-    # print(X)
     # 线性回归的工具包
     mode = LinearRegression()
     # 进行训练
@@ -183,7 +180,7 @@ def session6_ploy():
 '''波士顿房价，多元回归模型'''
 
 
-def session_boston():
+def session6_boston():
     from sklearn.datasets import load_boston
     from sklearn.model_selection import train_test_split
     from sklearn.pipeline import Pipeline
@@ -223,11 +220,93 @@ def session_boston():
     )
     poly.fit(train_X,train_Y)
     polyPreTestY = poly.predict(test_X)
-    print('多项式回归得分:{}'.format(poly.score(test_X,test_Y)))
+    # print('多项式回归得分:{}'.format(poly.score(test_X,test_Y)))
 
     plt.plot(train_X,train_Y)
     plt.show()
 
+def session6_stock():
+    from sklearn.linear_model import LinearRegression
+    from sklearn.preprocessing import StandardScaler
+    import tushare as ts
+    stock = ''
+    try:
+        stock = pd.read_csv('300348.csv')
+    except Exception:
+        stock = ts.get_hist_data('300348')
+        stock.to_csv('300348.csv')
 
-session_boston()
+    stock['date'] = pd.to_datetime(stock['date'])
+    stock = stock.set_index('date')
+    stock.sort_values(by=['date'],inplace=True, ascending=True)
+    print(stock.shape)
+    Y = pd.DataFrame(stock.get('high'))
+    X = stock.drop('high',axis=1)
+    day = np.arange(Y.size).reshape(-1,1)
+
+    x_train = X.values[:-120,:]
+    x_test = X.values[-120:,:]
+
+    y_train = Y.values[:-120,:]
+    y_test = Y.values[-120:,:]
+    #
+    day_train = day[:-120,:]
+    day_test = day[-120:,:]
+
+    model = LinearRegression()
+    model.fit(x_train,y_train)
+    pre_test_y = model.predict(x_test)
+
+    print(X.shape)
+    print(Y.shape)
+    plt.plot(day_train,y_train,color='r')
+    plt.plot(day_test,y_test,color='g')
+    plt.plot(day_test,pre_test_y,color='b')
+    plt.title('stock:[300348] model score is:{}'.format(model.score(x_test,y_test)))
+    plt.show()
+
+def session6_stock_line():
+    from sklearn.linear_model import LinearRegression
+    import tushare as ts
+    stock = ''
+    try:
+        stock = pd.read_csv('300348.csv')
+    except Exception:
+        stock = ts.get_hist_data('300348')
+        stock.to_csv('300348.csv')
+
+    stock['date'] = pd.to_datetime(stock['date'])
+    stock = stock.set_index('date')
+    stock.sort_values(by=['date'], inplace=True, ascending=True)
+
+    Y = pd.DataFrame(stock.get('high'))
+    X = np.arange(Y.size).reshape(-1, 1)
+
+    x_train = X[:-120, :]
+    x_test = X[-120:, :]
+
+    y_train = Y.values[:-120, :]
+    y_test = Y.values[-120:, :]
+
+    model = LinearRegression()
+
+    model.fit(x_train, y_train)
+    pre_test_y = model.predict(x_test)
+
+
+    plt.plot(x_train, y_train, color='r')
+    plt.plot(x_test, y_test, color='g')
+    plt.plot(x_test, pre_test_y, color='b')
+    plt.title('stock:[300348] model score is:{}'.format(model.score(x_test, y_test)))
+    plt.show()
+
+
+    # day = np.arange(data['date'].size).reshape(-1,1)
+    # print(day)
+    # print(stock)
+
+# session6_stock_line()
+session6_stock()
+# session6_liner()
+# session6_boston()
 # session6_ploy()
