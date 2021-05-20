@@ -32,5 +32,5 @@ def analysis(path):
     for key in wordbeg:
         print(key, ',',wordbeg[key])
 
-
+# analysis('/Users/danebrown/develop/')
 fire.Fire(analysis)
